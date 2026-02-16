@@ -1,7 +1,7 @@
 # bot/config/settings.py
 from dotenv import load_dotenv
 import os
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 
 env_path = os.path.join(os.path.dirname(__file__), '../../.env')
 load_dotenv(env_path)
@@ -12,6 +12,9 @@ class Config:
     # Telegram
     BOT_TOKEN = os.getenv('BOT_TOKEN')
     
+    # Администраторы
+    ADMIN_IDS = [int(id.strip()) for id in os.getenv('ADMIN_IDS', '').split(',') if id.strip()]
+    
     # Google Sheets
     SPREADSHEET_ID = os.getenv('SPREADSHEET_ID')
     SERVICE_ACCOUNT_FILE = os.getenv('SERVICE_ACCOUNT_FILE')
@@ -19,54 +22,157 @@ class Config:
     # Настройки кэша
     CACHE_UPDATE_INTERVAL = int(os.getenv('CACHE_UPDATE_INTERVAL', 300))
     
-    # Словарь с настройками листов
-    SHEETS_CONFIG: Dict[str, Dict[str, str]] = {
-        "iphones": {
-            "sheet_name": "айфоны",
-            "display_name": "iPhone",
+    # Иерархическая структура категорий
+    CATEGORIES: Dict[str, Dict[str, Any]] = {
+        "iphone": {
+            "name": "📱 iPhone",
             "emoji": "📱",
-            "callback": "show_iphones"
+            "callback": "menu_iphone",
+            "subcategories": {
+                "iphone_17_pro_max": {
+                    "name": "iPhone 17 Pro Max",
+                    "sheet_name": "айфон 17 про макс",
+                    "emoji": "📱",
+                    "callback": "show_iphone_17_pro_max"
+                },
+                "iphone_17_pro": {
+                    "name": "iPhone 17 Pro",
+                    "sheet_name": "айфон 17 про",
+                    "emoji": "📱",
+                    "callback": "show_iphone_17_pro"
+                },
+                "iphone_17": {
+                    "name": "iPhone 17",
+                    "sheet_name": "айфон 17",
+                    "emoji": "📱",
+                    "callback": "show_iphone_17"
+                },
+                "iphone_air": {
+                    "name": "iPhone Air",
+                    "sheet_name": "айфон эйр",
+                    "emoji": "📱",
+                    "callback": "show_iphone_air"
+                },
+                "iphone_16_pro_max": {
+                    "name": "iPhone 16 Pro Max",
+                    "sheet_name": "айфон 16 про макс",
+                    "emoji": "📱",
+                    "callback": "show_iphone_16_pro_max"
+                },
+                "iphone_16_pro": {
+                    "name": "iPhone 16 Pro",
+                    "sheet_name": "айфон 16 про",
+                    "emoji": "📱",
+                    "callback": "show_iphone_16_pro"
+                },
+                "iphone_16_plus": {
+                    "name": "iPhone 16 Plus",
+                    "sheet_name": "айфон 16 плюс",
+                    "emoji": "📱",
+                    "callback": "show_iphone_16_plus"
+                },
+                "iphone_16": {
+                    "name": "iPhone 16",
+                    "sheet_name": "айфон 16",
+                    "emoji": "📱",
+                    "callback": "show_iphone_16"
+                }
+            }
         },
-        "macbooks": {
-            "sheet_name": "макбуки",
-            "display_name": "MacBook",
+        "macbook": {
+            "name": "💻 MacBook",
             "emoji": "💻",
-            "callback": "show_macbooks"
+            "callback": "menu_macbook",
+            "subcategories": {
+                "macbook_air": {
+                    "name": "MacBook Air",
+                    "sheet_name": "макбук эйр",
+                    "emoji": "💻",
+                    "callback": "show_macbook_air"
+                },
+                "macbook_pro": {
+                    "name": "MacBook Pro",
+                    "sheet_name": "макбук про",
+                    "emoji": "💻",
+                    "callback": "show_macbook_pro"
+                }
+            }
         },
-        # Добавляйте новые листы здесь
-        "ipads": {
-            "sheet_name": "айпады",
-            "display_name": "iPad",
+        "ipad": {
+            "name": "📱 iPad",
             "emoji": "📱",
-            "callback": "show_ipads"
-        },
-        "airpods": {
-            "sheet_name": "эйрподсы",
-            "display_name": "AirPods",
-            "emoji": "🎧",
-            "callback": "show_airpods"
+            "callback": "menu_ipad",
+            "subcategories": {
+                "ipad_air": {
+                    "name": "iPad Air",
+                    "sheet_name": "айпад эйр",
+                    "emoji": "📱",
+                    "callback": "show_ipad_air"
+                },
+                "ipad_pro": {
+                    "name": "iPad Pro",
+                    "sheet_name": "айпад про",
+                    "emoji": "📱",
+                    "callback": "show_ipad_pro"
+                }
+            }
         },
         "watch": {
-            "sheet_name": "часы",
-            "display_name": "Apple Watch",
+            "name": "⌚️ Watch",
             "emoji": "⌚️",
-            "callback": "show_watch"
+            "callback": "menu_watch",
+            "subcategories": {
+                "watch_ultra": {
+                    "name": "Apple Watch Ultra",
+                    "sheet_name": "эпл вотч ультра",
+                    "emoji": "⌚️",
+                    "callback": "show_watch_ultra"
+                },
+                "watch_11": {
+                    "name": "Apple Watch 11",
+                    "sheet_name": "эпл вотч 11",
+                    "emoji": "⌚️",
+                    "callback": "show_watch_11"
+                }
+            }
+        },
+        "airpods": {
+            "name": "🎧 AirPods",
+            "emoji": "🎧",
+            "callback": "menu_airpods",
+            "sheet_name": "эйрподсы",
+            "is_direct": True
+        },
+        "samsung": {
+            "name": "📱 Samsung",
+            "emoji": "📱",
+            "callback": "menu_samsung",
+            "sheet_name": "самсунг",
+            "is_direct": True
+        },
+        "playstation": {
+            "name": "🎮 PlayStation",
+            "emoji": "🎮",
+            "callback": "menu_playstation",
+            "sheet_name": "плейстейшн",
+            "is_direct": True
         }
     }
     
-    @property
-    def sheet_names(self) -> List[str]:
-        """Получить список названий листов"""
-        return [cfg["sheet_name"] for cfg in self.SHEETS_CONFIG.values()]
+    def get_all_sheet_names(self) -> List[str]:
+        """Получить все названия листов"""
+        sheets = []
+        for category in self.CATEGORIES.values():
+            if category.get("is_direct"):
+                sheets.append(category["sheet_name"])
+            else:
+                for sub in category["subcategories"].values():
+                    sheets.append(sub["sheet_name"])
+        return sheets
     
-    @property
-    def callbacks(self) -> List[str]:
-        """Получить список callback данных"""
-        return [cfg["callback"] for cfg in self.SHEETS_CONFIG.values()]
-    
-    def get_sheet_config(self, key: str) -> Optional[Dict[str, str]]:
-        """Получить конфигурацию листа по ключу"""
-        return self.SHEETS_CONFIG.get(key)
+    def is_admin(self, user_id: int) -> bool:
+        """Проверка администратора"""
+        return user_id in self.ADMIN_IDS
     
     @classmethod
     def validate(cls):
@@ -78,5 +184,4 @@ class Config:
         if not os.path.exists(cls.SERVICE_ACCOUNT_FILE):
             raise FileNotFoundError(f"Файл с ключами не найден: {cls.SERVICE_ACCOUNT_FILE}")
 
-# Создаем экземпляр конфига
 config = Config()

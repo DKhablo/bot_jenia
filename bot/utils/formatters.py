@@ -9,44 +9,28 @@ def format_products_list(products: List[Tuple[str, str]], category: str) -> str:
     
     # Находим эмодзи для категории
     emoji = "📦"
-    for sheet_config in config.SHEETS_CONFIG.values():
-        if sheet_config['display_name'] == category:
-            emoji = sheet_config['emoji']
+    
+    # Ищем в основных категориях
+    for cat_key, category_data in config.CATEGORIES.items():
+        if category_data.get("is_direct") and category_data["name"] == category:
+            emoji = category_data["emoji"]
             break
+        # Ищем в подкатегориях
+        elif not category_data.get("is_direct") and "subcategories" in category_data:
+            for sub_key, subcategory in category_data["subcategories"].items():
+                if subcategory["name"] == category:
+                    emoji = subcategory["emoji"]
+                    break
     
-    text = f"<b>{emoji} {category}</b>\n\n"
+    text = f"<b>{emoji} {category}</b>\n"
+    text += "═" * 20 + "\n\n"
+    
     for i, (model, price) in enumerate(products, 1):
-        # Форматируем цену (добавляем пробелы для тысяч)
-        try:
-            # Убираем все пробелы из строки цены и пробуем преобразовать в int
-            price_clean = price.replace(' ', '').replace('₽', '').strip()
-            price_int = int(float(price_clean)) if '.' in price_clean else int(price_clean)
-            formatted_price = f"{price_int:,}".replace(',', ' ')
-        except (ValueError, TypeError):
-            formatted_price = price
+        # Форматируем цену
+        formatted_price = format_price(price)
         
-        text += f"{i}. {model} — <b>{formatted_price} ₽</b>\n"
-    
-    # Добавляем информацию о количестве
-    text += f"\nВсего: {len(products)} товаров"
-    
-    return text
-
-def format_stats(stats: Dict[str, int]) -> str:
-    """Форматирование статистики"""
-    if not stats:
-        return "📊 Нет данных для статистики"
-    
-    text = "📊 <b>Статистика</b>\n\n"
-    total_items = 0
-    
-    for key, count in stats.items():
-        sheet_config = config.get_sheet_config(key)
-        if sheet_config:
-            text += f"{sheet_config['emoji']} {sheet_config['display_name']}: {count}\n"
-            total_items += count
-    
-    text += f"\n<b>Всего товаров: {total_items}</b>"
+        text += f"<b>{i}.</b> {model}\n"
+        text += f"   💰 <b>{formatted_price}</b>\n\n"
     
     return text
 
@@ -61,11 +45,52 @@ def format_price(price: str) -> str:
             price_float = float(price_clean)
             if price_float.is_integer():
                 price_int = int(price_float)
+                formatted = f"{price_int:,}".replace(',', ' ')
             else:
-                return f"{price_float:,.2f}".replace(',', ' ')
+                formatted = f"{price_float:,.2f}".replace(',', ' ')
         else:
             price_int = int(price_clean)
-            return f"{price_int:,}".replace(',', ' ')
+            formatted = f"{price_int:,}".replace(',', ' ')
+        
+        return f"{formatted} ₽"
     except (ValueError, TypeError):
         return price
-    return price
+
+def format_stats(stats: Dict[str, int]) -> str:
+    """Форматирование статистики"""
+    if not stats:
+        return "📊 Нет данных для статистики"
+    
+    text = "📊 <b>Статистика</b>\n"
+    text += "═" * 20 + "\n\n"
+    
+    total_items = 0
+    
+    # Собираем все названия категорий для отображения
+    category_names = {}
+    
+    # Основные категории
+    for cat_key, category in config.CATEGORIES.items():
+        if category.get("is_direct"):
+            category_names[cat_key] = {
+                "name": category["name"],
+                "emoji": category["emoji"]
+            }
+        else:
+            # Подкатегории
+            for sub_key, subcategory in category["subcategories"].items():
+                category_names[sub_key] = {
+                    "name": subcategory["name"],
+                    "emoji": subcategory["emoji"]
+                }
+    
+    # Выводим статистику
+    for key, count in stats.items():
+        if key in category_names:
+            text += f"{category_names[key]['emoji']} <b>{category_names[key]['name']}:</b> {count}\n"
+            total_items += count
+    
+    text += "\n" + "─" * 20 + "\n"
+    text += f"📦 <b>Всего товаров:</b> {total_items}"
+    
+    return text
