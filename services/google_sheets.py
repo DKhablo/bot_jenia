@@ -1,11 +1,11 @@
 # services/google_sheets.py
 import logging
-from typing import List, Tuple
+from typing import List, Tuple, Dict, Any, Optional
 
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
-from bot.config import config  # ИЗМЕНЕНО
+from bot.config import config
 
 logger = logging.getLogger(__name__)
 
@@ -60,6 +60,26 @@ class GoogleSheetsReader:
             
         except Exception as e:
             logger.error(f"❌ Ошибка получения данных из листа {sheet_name}: {e}")
+            return []
+    
+    def get_all_sheets_data(self, spreadsheet_id: str) -> Dict[str, List[Tuple[str, str]]]:
+        """Получение данных со всех листов"""
+        result = {}
+        for key, sheet_config in config.SHEETS_CONFIG.items():
+            sheet_name = sheet_config["sheet_name"]
+            result[key] = self.get_sheet_data(spreadsheet_id, sheet_name)
+        return result
+    
+    def get_sheet_info(self, spreadsheet_id: str) -> List[str]:
+        """Получить список всех листов в таблице"""
+        try:
+            result = self.service.spreadsheets().get(
+                spreadsheetId=spreadsheet_id
+            ).execute()
+            sheets = result.get('sheets', [])
+            return [sheet['properties']['title'] for sheet in sheets]
+        except Exception as e:
+            logger.error(f"❌ Ошибка получения списка листов: {e}")
             return []
     
     def is_connected(self) -> bool:
