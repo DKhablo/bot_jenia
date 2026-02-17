@@ -4,6 +4,8 @@ from bot.config import config
 
 def format_products_list(products: List[Tuple[str, str]], category: str) -> str:
     """Форматирование списка товаров для вывода"""
+    count=1
+
     if not products:
         return f"❌ Нет данных по категории {category}"
     
@@ -24,13 +26,18 @@ def format_products_list(products: List[Tuple[str, str]], category: str) -> str:
     
     text = f"<b>{emoji} {category}</b>\n"
     text += "═" * 20 + "\n\n"
-    
+
     for i, (model, price) in enumerate(products, 1):
         # Форматируем цену
         formatted_price = format_price(price)
-        
-        text += f"<b>{i}.</b> {model}\n"
-        text += f"   💰 <b>{formatted_price}</b>\n\n"
+        if len(model) > 10:
+            if price != "0":
+                text += f"<b>{count}.</b> {model}\n"
+                text += f"   💰 <b>{formatted_price}</b>\n\n"
+                count += 1
+        else:
+            text += f"<b>__________ {model} __________</b>\n\n"
+            count = 1
     
     return text
 

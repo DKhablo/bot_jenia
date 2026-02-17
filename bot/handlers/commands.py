@@ -33,7 +33,14 @@ async def cmd_stats(message: types.Message):
     """Статистика"""
     stats = cache.get_stats()
     text = format_stats(stats)
-    await message.answer(text, reply_markup=get_main_keyboard(message.from_user.id))
+    is_admin = config.is_admin(message.from_user.id)
+    if is_admin:
+        await message.answer(text, reply_markup=get_main_keyboard(message.from_user.id))
+    else:
+        await message.answer(
+            f"❌ Вы не администратор\nID: {message.from_user.id}",
+            reply_markup=get_main_keyboard(message.from_user.id)
+        )
 
 async def cmd_admin(message: types.Message):
     """Проверка администратора"""
