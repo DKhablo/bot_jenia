@@ -21,4 +21,5 @@ service-account-key.json
 *.swo
 
 # Logs
-*.log
+*.logdata/*.db
+*.db
