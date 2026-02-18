@@ -15,54 +15,6 @@ from bot.handlers.callbacks import register_callbacks
 from data import cache
 from services import sheets_reader
 
-import psutil
-import os
-
-# Добавьте в начало файла после импортов
-def log_memory_usage():
-    """Логирование использования памяти"""
-    process = psutil.Process(os.getpid())
-    memory_info = process.memory_info()
-    
-    # В байтах
-    rss = memory_info.rss  # Resident Set Size - память в RAM
-    vms = memory_info.vms  # Virtual Memory Size - виртуальная память
-    
-    # Конвертируем в MB
-    rss_mb = rss / 1024 / 1024
-    vms_mb = vms / 1024 / 1024
-    
-    # Процент использования CPU
-    cpu_percent = process.cpu_percent(interval=1)
-    
-    # Общая память системы
-    system_memory = psutil.virtual_memory()
-    
-    logger.info("=" * 50)
-    logger.info("📊 ИСПОЛЬЗОВАНИЕ РЕСУРСОВ:")
-    logger.info(f"💾 RAM (RSS): {rss_mb:.2f} MB")
-    logger.info(f"💿 Виртуальная память: {vms_mb:.2f} MB")
-    logger.info(f"⚙️ CPU: {cpu_percent:.1f}%")
-    logger.info(f"🖥️ Всего RAM в системе: {system_memory.total / 1024 / 1024:.0f} MB")
-    logger.info(f"📈 Свободно RAM: {system_memory.available / 1024 / 1024:.0f} MB")
-    logger.info("=" * 50)
-    
-    return rss_mb
-
-# Добавьте периодический мониторинг
-async def memory_monitor():
-    """Мониторинг памяти каждые 60 секунд"""
-    while True:
-        await asyncio.sleep(60)
-        memory_usage = log_memory_usage()
-        
-        # Предупреждение если памяти слишком много
-        if memory_usage > 150:
-            logger.warning(f"⚠️ ВЫСОКОЕ ИСПОЛЬЗОВАНИЕ ПАМЯТИ: {memory_usage:.2f} MB")
-        
-        # Критическое предупреждение
-        if memory_usage > 300:
-            logger.error(f"❌ КРИТИЧЕСКОЕ ИСПОЛЬЗОВАНИЕ ПАМЯТИ: {memory_usage:.2f} MB")
 
 # Настройка логирования
 logging.basicConfig(
