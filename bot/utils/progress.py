@@ -13,18 +13,18 @@ class ProgressBar:
         self.width = width
         self.current = 0
         self.start_time = time.time()
+        self.last_text = ""  # Храним последний текст
+        self.last_percent = -1  # Храним последний процент
         
-        self.frames = ["◴", "◷", "◶", "◵", "◴", "◷", "◶", "◵"]
-        
+        # Анимационные фреймы
+        self.frames = ["◴", "◷", "◶", "◵"]
         self.frame_index = 0
     
     def _get_animation_char(self) -> str:
-        """Получить следующий символ анимации"""
         self.frame_index = (self.frame_index + 1) % len(self.frames)
         return self.frames[self.frame_index]
     
     def _format_time(self, seconds: float) -> str:
-        """Форматирование времени"""
         if seconds < 60:
             return f"{seconds:.0f}с"
         minutes = seconds // 60
@@ -32,7 +32,7 @@ class ProgressBar:
         return f"{minutes:.0f}м {secs:.0f}с"
     
     async def update(self, current: int, details: str = "", emoji: str = "📌"):
-        """Обновить прогресс-бар"""
+        """Обновить прогресс-бар с проверкой на изменения"""
         self.current = current
         percent = (self.current * 100) // self.total
         
@@ -50,18 +50,30 @@ class ProgressBar:
         # Получаем анимацию
         anim = self._get_animation_char()
         
-        # Формируем сообщение
+        # Формируем текст
         message_text = (
             f"{self.emoji} {anim} <b>Обновление данных</b>\n"
             f"┃{bar}┃ {percent}%\n"
             f"📊 <b>Прогресс:</b> {self.current}/{self.total}\n"
         )
+
         message_text += (
             f"⏱ <b>Прошло:</b> {self._format_time(elapsed)}\n"
             f"⏳ <b>Осталось:</b> {self._format_time(estimated)}"
         )
         
-        await self.message.edit_text(message_text)
+        # ВАЖНО: Обновляем только если текст изменился
+        if message_text != self.last_text:
+            try:
+                await self.message.edit_text(message_text)
+                self.last_text = message_text
+            except Exception as e:
+                # Если ошибка "message not modified" - игнорируем
+                if "message is not modified" not in str(e).lower():
+                    raise e
+        else:
+            # Если текст не изменился, просто логируем
+            print(f"ℹ️ Пропуск обновления - текст не изменился ({percent}%)")
     
     async def finish(self, summary: str = ""):
         """Завершить прогресс"""
@@ -76,15 +88,22 @@ class ProgressBar:
         if summary:
             message_text += f"\n📊 {summary}"
         
-        await self.message.edit_text(message_text)
+        try:
+            await self.message.edit_text(message_text)
+        except Exception as e:
+            if "message is not modified" not in str(e).lower():
+                raise e
         
-        # Небольшая задержка перед возвратом в меню
         await asyncio.sleep(2)
     
     async def error(self, error_text: str):
         """Показать ошибку"""
-        await self.message.edit_text(
-            f"❌ <b>Ошибка при обновлении</b>\n"
-            f"⚠️ {error_text}\n\n"
-            f"🔄 Попробуйте позже"
-        )
+        try:
+            await self.message.edit_text(
+                f"❌ <b>Ошибка при обновлении</b>\n"
+                f"⚠️ {error_text}\n\n"
+                f"🔄 Попробуйте позже"
+            )
+        except Exception as e:
+            if "message is not modified" not in str(e).lower():
+                raise e

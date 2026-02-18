@@ -151,7 +151,7 @@ async def refresh_data_with_progress(callback: CallbackQuery):
         "🔄 Подготовка списка категорий..."
     )
     
-    # Собираем все категории для обновления
+    # СОБИРАЕМ ВСЕ КАТЕГОРИИ (ЭТО ВАЖНО!)
     all_categories = []
     
     # Прямые категории
@@ -177,9 +177,15 @@ async def refresh_data_with_progress(callback: CallbackQuery):
                     "type": "sub"
                 })
     
+    # Проверка что категории найдены
+    if not all_categories:
+        await progress_message.edit_text("❌ Нет категорий для обновления")
+        return
+    
     total = len(all_categories)
     
     # Создаем прогресс-бар
+    from bot.utils.progress import ProgressBar
     progress = ProgressBar(
         total=total, 
         message=progress_message,
@@ -236,7 +242,6 @@ async def refresh_data_with_progress(callback: CallbackQuery):
         "Выберите категорию:",
         reply_markup=get_main_keyboard(callback.from_user.id)
     )
-
 def register_callbacks(dp):
     """Регистрация всех обработчиков callback'ов"""
     
