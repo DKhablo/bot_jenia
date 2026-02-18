@@ -86,9 +86,9 @@ async def main():
     ]
     await bot.set_my_commands(commands)
     
-    # Запуск автообновления кэша
-    if sheets_reader and sheets_reader.is_connected():
-        asyncio.create_task(auto_update_cache())
+    # # Запуск автообновления кэша
+    # if sheets_reader and sheets_reader.is_connected():
+    #     asyncio.create_task(auto_update_cache())
     
     # Запуск бота
     logger.info("🔄 Бот начинает polling...")
@@ -99,13 +99,13 @@ async def main():
     finally:
         await bot.session.close()
 
-async def auto_update_cache():
-    """Автоматическое обновление кэша"""
-    while True:
-        await asyncio.sleep(config.CACHE_UPDATE_INTERVAL)
-        if sheets_reader and sheets_reader.is_connected():
-            await cache.update_all()
-            logger.info("🔄 Кэш обновлен автоматически")
+# async def auto_update_cache():
+#     """Автоматическое обновление кэша"""
+#     while True:
+#         await asyncio.sleep(config.CACHE_UPDATE_INTERVAL)
+#         if sheets_reader and sheets_reader.is_connected():
+#             await cache.update_all()
+#             logger.info("🔄 Кэш обновлен автоматически")
 
 if __name__ == "__main__":
     # Для macOS

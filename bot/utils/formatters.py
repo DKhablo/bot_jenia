@@ -36,7 +36,7 @@ def format_products_list(products: List[Tuple[str, str]], category: str) -> str:
                 text += f"   💰 <b>{formatted_price}</b>\n\n"
                 count += 1
         else:
-            text += f"<b>__________ {model} __________</b>\n\n"
+            text += f"<b>__________  {model}  __________</b>\n\n"
             count = 1
     
     return text
