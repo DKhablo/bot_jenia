@@ -1,4 +1,3 @@
-# bot/keyboards/main.py
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from bot.config import config
 
@@ -21,6 +20,7 @@ def get_main_keyboard(user_id: int = None) -> InlineKeyboardMarkup:
     if row:
         buttons.append(row)
     
+    # Кнопка обновления только для админов
     if user_id and config.is_admin(user_id):
         buttons.append([InlineKeyboardButton(text="🔄 Обновить данные", callback_data="refresh_data")])
     

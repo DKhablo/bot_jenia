@@ -1,5 +1,5 @@
-# bot/handlers/callbacks.py
 import logging
+import asyncio
 from aiogram.types import CallbackQuery
 from aiogram import F
 
@@ -10,6 +10,7 @@ from bot.keyboards import (
     get_back_to_menu_keyboard
 )
 from bot.utils import format_products_list
+from bot.utils.progress import ProgressBar
 from data import cache
 from services import sheets_reader
 from bot.config import config
@@ -23,7 +24,7 @@ async def show_main_menu(callback: CallbackQuery):
     """Показать главное меню"""
     await callback.answer()
     await callback.message.edit_text(
-        "📋 Главное меню:",
+        "📋 <b>Главное меню</b>\n\nВыберите категорию:",
         reply_markup=get_main_keyboard(callback.from_user.id)
     )
 
@@ -31,7 +32,6 @@ async def show_category_menu(callback: CallbackQuery):
     """Показать меню категории"""
     await callback.answer()
     
-    # Получаем callback data
     callback_data = callback.data
     
     # Находим категорию по callback data
@@ -73,7 +73,6 @@ async def show_product_category(callback: CallbackQuery):
     """Показать товары подкатегории"""
     await callback.answer()
     
-    # Получаем callback data
     callback_data = callback.data
     
     # Ищем подкатегорию по callback data
@@ -132,28 +131,115 @@ async def back_to_subcategories(callback: CallbackQuery):
     else:
         await show_main_menu(callback)
 
-async def refresh_data(callback: CallbackQuery):
-    """Обновление данных (только для админов)"""
+async def refresh_data_with_progress(callback: CallbackQuery):
+    """Обновление данных с анимированным прогресс-баром"""
+    
+    # Проверка прав администратора
     if not config.is_admin(callback.from_user.id):
         await callback.answer("❌ Нет прав", show_alert=True)
         return
     
-    await callback.answer("🔄 Обновление...")
+    await callback.answer("🔄 Подготовка к обновлению...")
     
-    if sheets_reader and sheets_reader.is_connected():
-        await cache.update_all()
-        await callback.message.edit_text(
-            "✅ Данные обновлены!",
-            reply_markup=get_main_keyboard(callback.from_user.id)
-        )
-    else:
-        await callback.message.edit_text(
-            "❌ Ошибка подключения",
-            reply_markup=get_main_keyboard(callback.from_user.id)
-        )
+    # Проверка подключения к Google Sheets
+    if not sheets_reader or not sheets_reader.is_connected():
+        await callback.message.answer("❌ Ошибка подключения к Google Sheets")
+        return
+    
+    # Создаем начальное сообщение
+    progress_message = await callback.message.answer(
+        "🔄 Подготовка списка категорий..."
+    )
+    
+    # Собираем все категории для обновления
+    all_categories = []
+    
+    # Прямые категории
+    for cat_key, category in config.CATEGORIES.items():
+        if category.get("is_direct"):
+            all_categories.append({
+                "key": cat_key,
+                "name": category["name"],
+                "sheet": category["sheet_name"],
+                "emoji": category.get("emoji", "📦"),
+                "type": "direct"
+            })
+    
+    # Подкатегории
+    for category in config.CATEGORIES.values():
+        if not category.get("is_direct") and "subcategories" in category:
+            for sub_key, subcategory in category["subcategories"].items():
+                all_categories.append({
+                    "key": sub_key,
+                    "name": subcategory["name"],
+                    "sheet": subcategory["sheet_name"],
+                    "emoji": subcategory.get("emoji", "📌"),
+                    "type": "sub"
+                })
+    
+    total = len(all_categories)
+    
+    # Создаем прогресс-бар
+    progress = ProgressBar(
+        total=total, 
+        message=progress_message,
+        emoji="🔄",
+        width=15
+    )
+    
+    # Обновляем каждую категорию
+    for i, cat_info in enumerate(all_categories, 1):
+        try:
+            # Получаем данные из Google Sheets
+            data = sheets_reader.get_sheet_data(
+                config.SPREADSHEET_ID, 
+                cat_info["sheet"]
+            )
+            
+            # Сохраняем в БД
+            cache.db.save_products(cat_info["key"], cat_info["name"], data)
+            
+            # Формируем детали для отображения
+            details = (
+                f"{cat_info['emoji']} <b>{cat_info['name']}</b>\n"
+                f"📦 Товаров: {len(data)}"
+            )
+            
+            # Обновляем прогресс-бар
+            await progress.update(
+                current=i,
+                details=details,
+                emoji=cat_info['emoji']
+            )
+            
+            # Небольшая задержка для плавности анимации
+            await asyncio.sleep(0.2)
+            
+        except Exception as e:
+            logger.error(f"Ошибка при обновлении {cat_info['name']}: {e}")
+            await progress.error(f"Ошибка в категории {cat_info['name']}")
+            return
+    
+    # Получаем статистику
+    stats = cache.get_stats()
+    total_items = sum(stats.values())
+    
+    # Завершаем прогресс-бар
+    await progress.finish(
+        summary=f"📦 <b>Всего товаров:</b> {total_items}\n"
+                f"🗂 <b>Категорий:</b> {total}"
+    )
+    
+    # Возвращаемся в главное меню
+    await callback.message.answer(
+        "📋 <b>Главное меню</b>\n\n"
+        "Выберите категорию:",
+        reply_markup=get_main_keyboard(callback.from_user.id)
+    )
 
-# Регистрация обработчиков
 def register_callbacks(dp):
+    """Регистрация всех обработчиков callback'ов"""
+    
     # Главное меню
     dp.callback_query.register(show_main_menu, F.data == "main_menu")
     dp.callback_query.register(back_to_categories, F.data == "back_to_categories")
@@ -178,5 +264,7 @@ def register_callbacks(dp):
     for callback_data in product_callbacks:
         dp.callback_query.register(show_product_category, F.data == callback_data)
     
-    # Обновление данных
-    dp.callback_query.register(refresh_data, F.data == "refresh_data")
+    # Обновление данных с прогресс-баром
+    dp.callback_query.register(refresh_data_with_progress, F.data == "refresh_data")
+    
+    logger.info(f"✅ Зарегистрировано {len(category_callbacks)} категорий и {len(product_callbacks)} подкатегорий")
