@@ -25,7 +25,7 @@ class Config:
     # Иерархическая структура категорий
     CATEGORIES: Dict[str, Dict[str, Any]] = {
         "iphone": {
-            "name": "📱 iPhone",
+            "name": "📱 Apple iPhone",
             "emoji": "📱",
             "callback": "menu_iphone",
             "subcategories": {
@@ -80,45 +80,93 @@ class Config:
             }
         },
         "macbook": {
-            "name": "💻 MacBook",
+            "name": "💻 Apple MacBook",
             "emoji": "💻",
             "callback": "menu_macbook",
             "subcategories": {
-                "macbook_air": {
-                    "name": "MacBook Air",
-                    "sheet_name": "макбук эйр",
+                "macbook_air_13_m4": {
+                    "name": "Air 13 (M4)",
+                    "sheet_name": "макбук эйр 13 м4",
                     "emoji": "💻",
-                    "callback": "show_macbook_air"
+                    "callback": "show_macbook_air_13_m4"
                 },
-                "macbook_pro": {
-                    "name": "MacBook Pro",
-                    "sheet_name": "макбук про",
+                "macbook_air_15_m4": {
+                    "name": "Air 15 (M4)",
+                    "sheet_name": "макбук эйр 15 м4",
                     "emoji": "💻",
-                    "callback": "show_macbook_pro"
+                    "callback": "macbook_air_15_m4"
+                },
+                "macbook_pro_14_m4": {
+                    "name": "Pro 14 (M4)",
+                    "sheet_name": "макбук про 14 м4",
+                    "emoji": "💻",
+                    "callback": "show_macbook_pro_14_m4"
+                },
+                "macbook_pro_14_m5": {
+                    "name": "Pro 14 (M5)",
+                    "sheet_name": "макбук про 14 м5",
+                    "emoji": "💻",
+                    "callback": "show_macbook_pro_14_m5"
+                },
+                "macbook_pro_16_m4": {
+                    "name": "Pro 16 (M4)",
+                    "sheet_name": "макбук про 16 м4",
+                    "emoji": "💻",
+                    "callback": "show_macbook_pro_16_m4"
                 }
             }
         },
         "ipad": {
-            "name": "📱 iPad",
+            "name": "📱 Apple iPad",
             "emoji": "📱",
             "callback": "menu_ipad",
             "subcategories": {
-                "ipad_air": {
-                    "name": "iPad Air",
-                    "sheet_name": "айпад эйр",
-                    "emoji": "📱",
-                    "callback": "show_ipad_air"
+                "ipad_air_11_m3": {
+                    "name": "Air 11 (M3)",
+                    "sheet_name": "айпад эйр 11 м3",
+                    "emoji": "💻",
+                    "callback": "show_ipad_air_11_m3"
                 },
-                "ipad_pro": {
-                    "name": "iPad Pro",
-                    "sheet_name": "айпад про",
-                    "emoji": "📱",
-                    "callback": "show_ipad_pro"
+                "ipad_air_13_m3": {
+                    "name": "Air 13 (M3)",
+                    "sheet_name": "айпад эйр 13 м3",
+                    "emoji": "💻",
+                    "callback": "show_ipad_air_13_m3"
+                },
+                "ipad_pro_11_m4": {
+                    "name": "Pro 11 (M4)",
+                    "sheet_name": "айпад про 11 м4",
+                    "emoji": "💻",
+                    "callback": "show_ipad_pro_11_m4"
+                },
+                "ipad_pro_11_m5": {
+                    "name": "Pro 11 (M5)",
+                    "sheet_name": "айпад про 11 м5",
+                    "emoji": "💻",
+                    "callback": "show_ipad_pro_11_m5"
+                },
+                "ipad_pro_13_m4": {
+                    "name": "Pro 13 (M4)",
+                    "sheet_name": "айпад про 13 м4",
+                    "emoji": "💻",
+                    "callback": "show_ipad_pro_13_m4"
+                },
+                "ipad_pro_13_m5": {
+                    "name": "Pro 13 (M5)",
+                    "sheet_name": "айпад про 13 м5",
+                    "emoji": "💻",
+                    "callback": "show_ipad_pro_13_m5"
+                },
+                "ipad_11_a16": {
+                    "name": "iPad 11 (A16)",
+                    "sheet_name": "айпад а16",
+                    "emoji": "💻",
+                    "callback": "show_ipad_11_a16"
                 }
             }
         },
         "watch": {
-            "name": "⌚️ Watch",
+            "name": "⌚️ Apple Watch   ",
             "emoji": "⌚️",
             "callback": "menu_watch",
             "subcategories": {
@@ -133,11 +181,17 @@ class Config:
                     "sheet_name": "эпл вотч 11",
                     "emoji": "⌚️",
                     "callback": "show_watch_11"
+                },
+                "watch_se3": {
+                    "name": "Apple Watch SE3",
+                    "sheet_name": "эпл вотч SE3",
+                    "emoji": "⌚️",
+                    "callback": "show_watch_se3"
                 }
             }
         },
         "airpods": {
-            "name": "🎧 AirPods",
+            "name": "🎧 Apple AirPods",
             "emoji": "🎧",
             "callback": "menu_airpods",
             "sheet_name": "эйрподсы",
@@ -147,11 +201,29 @@ class Config:
             "name": "📱 Samsung",
             "emoji": "📱",
             "callback": "menu_samsung",
-            "sheet_name": "самсунг",
-            "is_direct": True
+            "subcategories": {
+                "samsung_S25_ultra": {
+                    "name": "Samsung S25 Ultra",
+                    "sheet_name": "самсунг с25 ультра",
+                    "emoji": "📱",
+                    "callback": "samsung_S25_ultra"
+                },
+                "samsung_S25_plus": {
+                    "name": "Samsung S25 Plus",
+                    "sheet_name": "самсунг с25 плюс",
+                    "emoji": "📱",
+                    "callback": "samsung_S25_plus"
+                },
+                "samsung_S25": {
+                    "name": "Samsung S25",
+                    "sheet_name": "самсунг с25",
+                    "emoji": "📱",
+                    "callback": "samsung_S25"
+                },
+            },
         },
         "playstation": {
-            "name": "🎮 PlayStation",
+            "name": "🎮 Sony PlayStation",
             "emoji": "🎮",
             "callback": "menu_playstation",
             "sheet_name": "плейстейшн",

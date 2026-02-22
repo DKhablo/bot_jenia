@@ -25,18 +25,19 @@ def format_products_list(products: List[Tuple[str, str]], category: str) -> str:
                     break
     
     text = f"<b>{emoji} {category}</b>\n"
-    text += "═" * 20 + "\n\n"
+    text += "_" * 35 + "\n"
+    text += f"<i>Вы можете скопировать нужную позицию простым нажатием на текст, а затем отправить её в личные сообщения</i> \n"
+    text += "_" * 35 + "\n\n"
 
     for i, (model, price) in enumerate(products, 1):
         # Форматируем цену
         formatted_price = format_price(price)
         if len(model) > 10:
             if price != "0":
-                text += f"<b>{count}.</b> {model}\n"
-                text += f"   💰 <b>{formatted_price}</b>\n\n"
+                text += f"<code><b>{count}.</b> {model}\n   💰 <b>{formatted_price}</b></code>\n\n"
                 count += 1
         else:
-            text += f"<b>__________  {model}  __________</b>\n\n"
+            text += f"<b>__________  {model}  __________</b>\n"
             count = 1
     
     return text

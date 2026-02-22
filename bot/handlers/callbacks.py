@@ -108,7 +108,7 @@ async def show_product_category(callback: CallbackQuery):
     await callback.message.edit_text(
         text,
         reply_markup=get_back_keyboard()
-    )
+        )
 
 async def back_to_categories(callback: CallbackQuery):
     """Вернуться к основным категориям"""
