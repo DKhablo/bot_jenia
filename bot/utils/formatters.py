@@ -31,14 +31,15 @@ def format_products_list(products: List[Tuple[str, str]], category: str) -> str:
 
     for i, (model, price) in enumerate(products, 1):
         # Форматируем цену
-        formatted_price = format_price(price)
-        if len(model) > 17 and price != "":
-            if price != "0":
-                text += f"<code><i>{count}. {model}</i>\n   💰 <b>{formatted_price}</b></code>\n\n"
-                count += 1
-        else:
-            text += f"<b>_______  {model}  _______</b>\n"
-            count = 1
+        if price != 'FALSE':
+            formatted_price = format_price(price)
+            if len(model) > 17:
+                if price != "0":
+                    text += f"<code><i>{count}. {model}</i>\n   💰 <b>{formatted_price}</b></code>\n\n"
+                    count += 1
+            else:
+                text += f"<b>_______  {model}  _______</b>\n"
+                count = 1
     return text
 
 def format_price(price: str) -> str:
