@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import asyncio
 import logging
-import os
 import sys
 
 from aiogram import Bot, Dispatcher
@@ -29,10 +28,10 @@ dp = None
 
 async def main():
     global bot, dp
-    
+
     logger.info("=" * 50)
     logger.info("🚀 Бот запускается...")
-    
+
     # Проверка конфигурации
     try:
         config.validate()
@@ -41,14 +40,14 @@ async def main():
     except Exception as e:
         logger.error(f"❌ Ошибка конфигурации: {e}")
         return
-    
+
     # Инициализация бота
     bot = Bot(
         token=config.BOT_TOKEN,
         default=DefaultBotProperties(parse_mode=ParseMode.HTML)
     )
     dp = Dispatcher()
-    
+
     # Проверка подключения к Telegram
     try:
         me = await bot.get_me()
@@ -57,7 +56,7 @@ async def main():
         logger.error(f"❌ Ошибка подключения к Telegram: {e}")
         await bot.session.close()
         return
-    
+
     # Проверка Google Sheets
     if sheets_reader and sheets_reader.is_connected():
         logger.info("✅ Google Sheets API подключен")
@@ -68,16 +67,16 @@ async def main():
             logger.error(f"❌ Ошибка загрузки данных: {e}")
     else:
         logger.error("❌ Google Sheets API не подключен")
-    
+
     # Регистрация обработчиков
     register_commands(dp)
     register_callbacks(dp)
-    
+
     # Обработчик неизвестных сообщений
     @dp.message()
     async def handle_unknown(message):
         await message.answer("❌ Неизвестная команда. Используйте /start")
-    
+
     # Настройка команд
     commands = [
         BotCommand(command="start", description="Запустить бота"),
@@ -86,7 +85,7 @@ async def main():
         BotCommand(command="admin", description="Проверка администратора"),
     ]
     await bot.set_my_commands(commands)
-    
+
     # Запуск бота
     logger.info("🔄 Бот начинает polling...")
     try:

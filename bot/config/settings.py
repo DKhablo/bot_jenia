@@ -1,27 +1,27 @@
 # bot/config/settings.py
 from dotenv import load_dotenv
 import os
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Any
 
 env_path = os.path.join(os.path.dirname(__file__), '../../.env')
 load_dotenv(env_path)
 
 class Config:
     """Класс конфигурации"""
-    
+
     # Telegram
     BOT_TOKEN = os.getenv('BOT_TOKEN')
-    
+
     # Администраторы
     ADMIN_IDS = [int(id.strip()) for id in os.getenv('ADMIN_IDS', '').split(',') if id.strip()]
-    
+
     # Google Sheets
     SPREADSHEET_ID = os.getenv('SPREADSHEET_ID')
     SERVICE_ACCOUNT_FILE = os.getenv('SERVICE_ACCOUNT_FILE')
-    
+
     # Настройки кэша
     CACHE_UPDATE_INTERVAL = int(os.getenv('CACHE_UPDATE_INTERVAL', 300))
-    
+
     # Иерархическая структура категорий
     CATEGORIES: Dict[str, Dict[str, Any]] = {
         "iphone": {
@@ -230,7 +230,7 @@ class Config:
             "is_direct": True
         }
     }
-    
+
     def get_all_sheet_names(self) -> List[str]:
         """Получить все названия листов"""
         sheets = []
@@ -241,11 +241,11 @@ class Config:
                 for sub in category["subcategories"].values():
                     sheets.append(sub["sheet_name"])
         return sheets
-    
+
     def is_admin(self, user_id: int) -> bool:
         """Проверка администратора"""
         return user_id in self.ADMIN_IDS
-    
+
     @classmethod
     def validate(cls):
         """Проверка конфигурации"""

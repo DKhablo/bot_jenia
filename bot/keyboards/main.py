@@ -20,6 +20,8 @@ def get_main_keyboard(user_id: int = None) -> InlineKeyboardMarkup:
     
     if row:
         buttons.append(row)
+        buttons.append([InlineKeyboardButton(text="info", style="danger", callback_data="info")])
+
     
     # Кнопка обновления только для админов
     if user_id and config.is_admin(user_id):
