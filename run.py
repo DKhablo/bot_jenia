@@ -3,17 +3,20 @@ import asyncio
 import logging
 import sys
 
-from aiogram import Bot, Dispatcher
+from aiogram import Bot, Dispatcher, F, Router
 from aiogram.enums import ParseMode
 from aiogram.client.default import DefaultBotProperties
-from aiogram.types import BotCommand
+from aiogram.types import BotCommand, Message
 
 from bot.config import config
 from bot.handlers.commands import register_commands
 from bot.handlers.callbacks import register_callbacks
+from bot.handlers import admin, category_management
 from data import cache
 from services import sheets_reader
 
+# Роутер для неизвестных сообщений
+unknown_router = Router()
 
 # Настройка логирования
 logging.basicConfig(
@@ -47,7 +50,10 @@ async def main():
         default=DefaultBotProperties(parse_mode=ParseMode.HTML)
     )
     dp = Dispatcher()
-
+    # Добавляем роутеры в первую очередь
+    dp.include_router(admin.router)
+    dp.include_router(category_management.router)
+    dp.include_router(unknown_router)
     # Проверка подключения к Telegram
     try:
         me = await bot.get_me()
@@ -68,13 +74,13 @@ async def main():
     else:
         logger.error("❌ Google Sheets API не подключен")
 
-    # Регистрация обработчиков
     register_commands(dp)
     register_callbacks(dp)
 
-    # Обработчик неизвестных сообщений
-    @dp.message()
-    async def handle_unknown(message):
+    # Обработчик неизвестных текстовых сообщений (в роутере с низким приоритетом)
+    @unknown_router.message(F.text, ~F.text.startswith('/'))
+    async def handle_unknown(message: Message):
+        logger.info(f"Неизвестное сообщение от {message.from_user.id}: {message.text}")
         await message.answer("❌ Неизвестная команда. Используйте /start")
 
     # Настройка команд
@@ -82,7 +88,7 @@ async def main():
         BotCommand(command="start", description="Запустить бота"),
         BotCommand(command="menu", description="Главное меню"),
         BotCommand(command="stats", description="Статистика"),
-        BotCommand(command="admin", description="Проверка администратора"),
+        BotCommand(command="admin", description="Панель администратора"),
     ]
     await bot.set_my_commands(commands)
 
